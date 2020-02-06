@@ -1,0 +1,15 @@
+{
+  "transmission": {
+    "local": true,
+    "host": "localhost",
+    "port": "9091",
+    "proto":"http",
+    "path": "/usr/bin/transmission-daemon",
+    "args": ["--foreground", "--config-dir", "/etc/torrentLassoEDGE/transmission-daemon"]
+  },
+  "torrentLassoBot":{
+    "host": "api.torrentlasso.com/edge",
+    "port": "443",
+    "proto":"https"
+  }
+}
