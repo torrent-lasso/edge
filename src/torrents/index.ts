@@ -117,7 +117,7 @@ export default class Transmission {
                 for(let i = 0; i < args.length; i++) {
                     for(let j= 0; j < param.length; j++)
                         if (typeof args[i][param[j]] === "undefined")
-                            return callback(new Error('Cant\'t find requested param '+ param[j]));
+                            return callback(new Error('Can\'t find requested param '+ param[j]));
 
                     if (!isParamsArray)
                         args[i] = args[i][param[0]];

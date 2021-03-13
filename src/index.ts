@@ -11,30 +11,29 @@ const log = Log(module);
 
 log.info("Starting TorrentLassoEDGE...");
 
-const local:boolean = Config.get('transmission:local');
+const local:boolean = Config.get('transmission:local') || Config.get('transmission_local');
 log.debug(`transmission:local=${local}`);
-const proto:IProto = Config.get('transmission:proto') || "http";
+const proto:IProto = Config.get('transmission:proto') || Config.get('transmission_proto') || "http";
 log.debug(`transmission:proto=${proto}`);
-const host:string = Config.get('transmission:host') || "localhost";
+const host:string = Config.get('transmission:host') || Config.get('transmission_host') || "localhost";
 log.debug(`transmission:host=${host}`);
-const port:number = Config.get('transmission:port') || 9091;
+const port:number = Config.get('transmission:port') || Config.get('transmission_port') ||9091;
 log.debug(`transmission:port=${port}`);
-const user:string|undefined = Config.get('TRANSMISSION:USER') || undefined;
-log.debug(`TRANSMISSION:USER=${user}`);
-const password:string|undefined = Config.get('TRANSMISSION:PASSWORD') || undefined;
-log.debug(`TRANSMISSION:PASSWORD=${password}`);
-const path:string|undefined = Config.get('transmission:path') || undefined;
+const user:string|undefined = Config.get('transmission:user') || Config.get('transmission_user') || undefined;
+log.debug(`transmission:user=${user}`);
+const password:string|undefined = Config.get('transmission:password') || Config.get('transmission_password') || undefined;
+log.debug(`transmission:password=${password}`);
+const path:string|undefined = Config.get('transmission:path') || Config.get('transmission_path') || undefined;
 log.debug(`transmission:path=${path}`);
-const args:Array<string>|undefined = Config.get('transmission:args') || undefined;
+const args:Array<string>|undefined = Config.get('transmission:args') || Config.get('transmission_args') ||undefined;
 log.debug(`transmission:args=${args}`);
 
 
-const token:string = Config.get('TOKEN');
-log.debug(`TOKEN=${token}`);
-const uri:string =  Config.get('torrentLassoBot:proto') +"://"+
-                    Config.get('torrentLassoBot:host') + ":" +
-                    Config.get('torrentLassoBot:port')+ "/?token="+token;
-log.debug(`API_URL=${uri}`);
+const token:string = Config.get('torrentlassobot:token') || Config.get('torrentlassobot_token');
+log.debug(`torrentlassobot:token=${token}`);
+
+const uri:string = _.trimEnd(Config.get('torrentlassobot_uri') || Config.get('torrentlassobot:uri'), '/') + "/?token="+token;
+log.debug(`uri=${uri}`);
 
 if (!token || !uri) {
     log.error("Can't defined main configuration parameters! Exit process");
@@ -46,9 +45,10 @@ const torrent  = new Torrent(local, proto, host, port, user, password, path, arg
 torrent.init((err)=>{
     if (err) return log.error(err);
 
-    const socket = Socket(uri);
+    const socket = Socket(uri);  //{path:'/edge'}
     socket.on('connect', ()=>{
         log.info("Connected to torrentLassoBot");
+
 
         //socket.emit('auth', {token:token});
     });
@@ -61,14 +61,14 @@ torrent.init((err)=>{
         hash: string | Array<string>,
         param: string | Array<string>,
         callback:(err?: string|null, status?: Object|Array<Object>|string|number) => void) =>{
-        log.debug(`Received message="torrent-get" hash=${hash}, param=${param}`);
+            log.debug(`Received message="torrent-get" hash=${hash}, param=${param}`);
 
-        torrent.getParam(hash,param, (err, status)=>{
-            if (err) return callback(err.message);
+            torrent.getParam(hash,param, (err, status)=>{
+                if (err) return callback(err.message);
 
-            log.debug(`torrent-get with hash=${hash}, param=${param} returns status=${status}`);
-            callback(null, status);
-        });
+                log.debug(`torrent-get with hash=${hash}, param=${param} returns status=${status}`);
+                callback(null, status);
+            });
     });
 
     socket.on("free-space", (
@@ -147,7 +147,7 @@ torrent.init((err)=>{
     );
 
     socket.on('disconnect',  () => {
-        log.info("Disconnect from TorrentLassoEDGE");
+        log.info("Disconnect from torrentLassoBot");
     });
 });
 
