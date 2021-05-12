@@ -24,7 +24,7 @@
     "@types/socket.io": "^2.1.11",
     "@types/socket.io-client": "^1.4.34",
     "@types/winston": "^2.4.4",
-    "lodash": "^4.17.19",
+    "lodash": "^4.17.21",
     "nconf": "^0.10.0",
     "request": "^2.88.0",
     "shelljs": "^0.8.3",
