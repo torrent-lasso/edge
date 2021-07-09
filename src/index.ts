@@ -1,5 +1,6 @@
 import _ from "lodash";
-import Socket   from "socket.io-client";
+import Socket from "socket.io-client";
+import fs  from "fs";
 
 import Config   from "./config";
 import Log      from "./log";
@@ -7,9 +8,11 @@ import Torrent, {IAddStatus, IProto} from "./torrents"
 import {any} from "nconf";
 import {stringify} from "querystring";
 
+const  pjson = require("../package.json");
+
 const log = Log(module);
 
-log.info("Starting TorrentLassoEDGE...");
+log.info(`Starting TorrentLassoEDGE ${pjson.version}...`);
 
 const local:boolean = Config.get('transmission:local') || Config.get('transmission_local');
 log.debug(`transmission:local=${local}`);
@@ -41,6 +44,8 @@ if (!token || !uri) {
 }
 
 const torrent  = new Torrent(local, proto, host, port, user, password, path, args);
+
+let stopTransfer:number = -1;
 
 torrent.init((err)=>{
     if (err) return log.error(err);
@@ -146,8 +151,48 @@ torrent.init((err)=>{
         }
     );
 
+    socket.on("file-size", (
+        filename:string,
+        callback:(err?: string|null, size?: number) => void ) => {
+            log.debug(`Received message="file-size" for filename=${filename}`);
+            fs.stat(filename, (err, stats)=>{
+                if (err == null) {
+                    callback(null,stats.size);
+                } else if (err.code) {
+                    callback(err.message);
+                }
+            });
+        }
+    );
+
+    socket.on("start-transfer", (filename:string, transferId:number)=>{
+        let readStream = fs.createReadStream(filename,{encoding: 'binary'});
+
+        log.debug(`Start streaming filename=${filename}`);
+
+        readStream.on('data',  (chunk) => {
+            if (stopTransfer === transferId) {
+                readStream.destroy();
+                stopTransfer = -1;
+                return;
+            }
+
+            log.debug(`file-transfer chunk.length=${chunk.length}`);
+            socket.emit('file-transfer', transferId, chunk);
+        });
+
+        readStream.on('end',  () => {
+            log.debug(`Stop streaming filename=${filename}`);
+        });
+    });
+
+    socket.on("stop-transfer", (transferId:number) =>{
+        stopTransfer = transferId;
+    });
+
     socket.on('disconnect',  () => {
         log.info("Disconnect from torrentLassoBot");
     });
 });
+
 
