@@ -28,10 +28,13 @@ RUN apt-get install -y curl gnupg \
 COPY ./docker/config.json /etc/torrentLassoEDGE/config.json
 COPY ./docker/settings.json /etc/torrentLassoEDGE/transmission-daemon/settings.json
 
+#store transmission files
+VOLUME /etc/torrentLassoEDGE/transmission-daemon
+
 WORKDIR /usr/bin/torrentLassoEDGE
 
 ## Local Version (comment this block if production)
-COPY package.json .
+# COPY package.json .
 # RUN npm install && mkdir dist
 
 # Add mappigs when start container:
@@ -43,11 +46,11 @@ COPY package.json .
 ## Production Version deploing from Github (comment this block if development)
 # RUN git clone https://github.com/vaxann/torrentLassoEDGE.git /usr/bin/torrentLassoEDGE
 
-## Config for local image build
+## Production Config for local image build
+COPY package.json .
 COPY tsconfig.json .
-COPY docker/config.json /etc/torrentLassoEDGE/config.json
 COPY src src/
-RUN npm install && mkdir dist && npm run-script build
+RUN npm install && npm install typescript -g && mkdir dist && npm run-script build
 
 CMD node /usr/bin/torrentLassoEDGE/dist/index.js
 
