@@ -6,4 +6,4 @@ docker buildx build \
 --no-cache \
 --platform linux/arm64,linux/arm/v7,linux/amd64 \
 --tag vaxann/torrentlassoedgeimg:latest \
--f docker/Dockerfile .
+.

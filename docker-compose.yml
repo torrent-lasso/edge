@@ -1,0 +1,15 @@
+version: "3.1"
+networks:
+  bot_custom-net:
+    external: true 
+services:
+  edge:
+    container_name: edge
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - /Users/ivanabramenko/pet-projects/torrent-lasso/environment/transmission:/etc/torrentLassoEDGE/transmission-daemon
+      - /Users/ivanabramenko/pet-projects/torrent-lasso/environment/downloads:/data
+    networks:
+      - bot_custom-net
