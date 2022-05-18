@@ -178,7 +178,7 @@ torrent.init((err)=>{
             }
 
             log.debug(`file-transfer chunk.length=${chunk.length}`);
-            socket.emit('file-transfer', transferId, chunk);
+            socket.emit('file-transfer', transferId, Buffer.from(chunk, 'binary').toString('base64'));
         });
 
         readStream.on('end',  () => {
