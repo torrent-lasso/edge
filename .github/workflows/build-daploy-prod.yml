@@ -1,0 +1,74 @@
+name: Docker-prod
+"on":
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - "package.json"
+      - "package-lock.json"
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: "${{ github.repository }}"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.ADMIN_TOKEN }}
+
+      - name: "Log into registry ${{ env.REGISTRY }}"
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@28218f9b04b4f3f62068d7b6ce6ca5b26e35336c
+        with:
+          registry: "${{ env.REGISTRY }}"
+          username: "${{ github.actor }}"
+          password: "${{ secrets.GITHUB_TOKEN }}"
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+      - run: git config --global user.name 'GitHub Action'
+      - run: git config --global user.email 'vaxann@gmail.com'
+      - run: npm version patch -m "Automatic version update to v%s"
+      - run: git push
+
+      - name: get-npm-version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
+
+      - name: Check package.json version
+        run: echo ${{ steps.package-version.outputs.current-version }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-img"
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.package-version.outputs.current-version}}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: "${{ github.event_name != 'pull_request' }}"
+          tags: "${{ steps.meta.outputs.tags }}"
+          labels: "${{ steps.meta.outputs.labels }}"
+          file: "Dockerfile"
+
+  # TODO: add portainer & deploy
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Invoke deployment hook
+  #       uses: distributhor/workflow-webhook@v2
+  #       env:
+  #         webhook_url: ${{ secrets.WEBHOOK_URL }}
+  #         webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
