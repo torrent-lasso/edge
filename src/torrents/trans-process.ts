@@ -53,7 +53,7 @@ export default class TransProcess {
 
       setTimeout(() => {
         if (!hasErr) callback();
-      }, 2000);
+      }, 10000);
     });
   }
 }
