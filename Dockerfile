@@ -20,7 +20,7 @@ RUN apt-get install -y curl gnupg \
 COPY ./configs/config.json /etc/torrentLassoEDGE/config.json
 COPY ./configs/settings.json /etc/torrentLassoEDGE/transmission-daemon/settings.json
 
-WORKDIR /usr
+WORKDIR /usr/app
 COPY package.json .
 COPY tsconfig.json .
 COPY src ./src
