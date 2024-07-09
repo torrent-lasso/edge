@@ -71,7 +71,7 @@ function __editConfig(
     try {
       config = JSON.parse(data);
     } catch (e) {
-      if (e) return callback(e);
+      if (e) return callback(e as Error);
     }
 
     if (user && password) {
