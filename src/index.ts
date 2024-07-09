@@ -6,11 +6,11 @@ import Config from './config';
 import Log from './log';
 import Torrent, { IAddStatus, IProto } from './torrents';
 
-const pjson = require('../package.json');
+import pack from '../package.json';
 
 const log = Log(module);
 
-log.info(`Starting TorrentLassoEDGE ${pjson.version}...`);
+log.info(`Starting TorrentLassoEDGE ${pack.version}...`);
 
 const local: boolean =
   Config.get('transmission:local') || Config.get('transmission_local');
