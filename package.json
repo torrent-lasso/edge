@@ -1,6 +1,6 @@
 {
   "name": "torrentlassoedge",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "TorrentLassoEDGE - torrent client for TorrentLassoBot",
   "main": "src/index.ts",
   "scripts": {
